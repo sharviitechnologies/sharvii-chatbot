@@ -2,119 +2,132 @@
   var BACKEND = 'https://sharvii-chatbot-production.up.railway.app/chat';
   var LOGO_URL = 'https://sharviitechnologies.com/wp-content/uploads/2026/01/cropped-ST-logo.png';
 
+  window.toggleSharviiChat = function(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    var box = document.getElementById('st-box');
+    if (box) {
+      box.style.display = (box.style.display === 'flex') ? 'none' : 'flex';
+    }
+  };
+
   var style = document.createElement('style');
   style.textContent = `
     #st-btn {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: #1a5f3c;
-      border: none;
-      cursor: pointer;
-      z-index: 99999999;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      overflow: hidden;
+      position: fixed !important;
+      bottom: 30px !important;
+      right: 30px !important; /* Flipped back to right corner */
+      left: auto !important;
+      width: 65px !important;
+      height: 65px !important;
+      border-radius: 50% !important;
+      background: #ffffff !important;
+      border: 2px solid #1a5f3c !important;
+      cursor: pointer !important;
+      z-index: 2147483647 !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      overflow: hidden !important;
     }
     #st-btn img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 50%;
+      width: 85% !important;
+      height: 85% !important;
+      object-fit: contain !important;
+      pointer-events: none !important;
     }
     #st-box {
-      position: fixed;
-      bottom: 94px;
-      right: 24px;
-      width: 340px;
-      height: 460px;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      position: fixed !important;
+      bottom: 105px !important;
+      right: 30px !important; /* Opens on the right side above button */
+      left: auto !important;
+      width: 350px !important;
+      height: 480px !important;
+      background: #fff !important;
+      border-radius: 16px !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2) !important;
       display: none;
-      flex-direction: column;
-      z-index: 99999999;
-      font-family: sans-serif;
-      overflow: hidden;
+      flex-direction: column !important;
+      z-index: 2147483647 !important;
+      font-family: sans-serif !important;
+      overflow: hidden !important;
     }
     #st-head {
-      background: #1a5f3c;
-      color: #fff;
-      padding: 14px 16px;
-      font-weight: 700;
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      background: #1a5f3c !important;
+      color: #fff !important;
+      padding: 14px 16px !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
     }
     #st-head img {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #fff;
+      width: 24px !important;
+      height: 24px !important;
+      border-radius: 50% !important;
+      background: #fff !important;
     }
     #st-msgs {
-      flex: 1;
-      overflow-y: auto;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      flex: 1 !important;
+      overflow-y: auto !important;
+      padding: 14px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 10px !important;
     }
     #st-msgs .u {
-      background: #1a5f3c;
-      color: #fff;
-      align-self: flex-end;
-      padding: 10px 13px;
-      border-radius: 12px 12px 2px 12px;
-      max-width: 80%;
-      font-size: 14px;
-      line-height: 1.5;
+      background: #1a5f3c !important;
+      color: #fff !important;
+      align-self: flex-end !important;
+      padding: 10px 13px !important;
+      border-radius: 12px 12px 2px 12px !important;
+      max-width: 80% !important;
+      font-size: 14px !important;
+      line-height: 1.5 !important;
     }
     #st-msgs .b {
-      background: #f1f1f1;
-      color: #222;
-      align-self: flex-start;
-      padding: 10px 13px;
-      border-radius: 12px 12px 12px 2px;
-      max-width: 80%;
-      font-size: 14px;
-      line-height: 1.5;
+      background: #f1f1f1 !important;
+      color: #222 !important;
+      align-self: flex-start !important;
+      padding: 10px 13px !important;
+      border-radius: 12px 12px 12px 2px !important;
+      max-width: 80% !important;
+      font-size: 14px !important;
+      line-height: 1.5 !important;
     }
     #st-row {
-      display: flex;
-      padding: 10px;
-      border-top: 1px solid #eee;
-      gap: 8px;
+      display: flex !important;
+      padding: 10px !important;
+      border-top: 1px solid #eee !important;
+      gap: 8px !important;
     }
     #st-inp {
-      flex: 1;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 9px 12px;
-      font-size: 14px;
-      outline: none;
+      flex: 1 !important;
+      border: 1px solid #ddd !important;
+      border-radius: 8px !important;
+      padding: 9px 12px !important;
+      font-size: 14px !important;
+      outline: none !important;
     }
     #st-send {
-      background: #1a5f3c;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 9px 16px;
-      cursor: pointer;
-      font-size: 14px;
+      background: #1a5f3c !important;
+      color: #fff !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 9px 16px !important;
+      cursor: pointer !important;
+      font-size: 14px !important;
     }
   `;
   document.head.appendChild(style);
 
   document.body.insertAdjacentHTML('beforeend',
-    '<button id="st-btn"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
+    '<button id="st-btn" onclick="window.toggleSharviiChat(event)"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
     '<div id="st-box">' +
     '<div id="st-head"><img src="' + LOGO_URL + '"> Sharvii Assistant</div>' +
     '<div id="st-msgs"><div class="b">Hi! Ask me anything about Sharvii Technologies 😊</div></div>' +
@@ -122,21 +135,9 @@
     '</div>'
   );
 
-  var btn = document.getElementById('st-btn');
-  var box = document.getElementById('st-box');
   var inp = document.getElementById('st-inp');
   var send = document.getElementById('st-send');
   var msgs = document.getElementById('st-msgs');
-
-  btn.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (box.style.display === 'flex') {
-      box.style.display = 'none';
-    } else {
-      box.style.display = 'flex';
-    }
-  });
 
   function addMsg(text, type) {
     var div = document.createElement('div');
@@ -150,31 +151,38 @@
     var msg = inp.value.trim();
     if (!msg) return;
     inp.value = '';
+    
     addMsg(msg, 'u');
     addMsg('Typing...', 'b');
+    
     try {
       var res = await fetch(BACKEND, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({ message: msg })
       });
+      
       var data = await res.json();
-      msgs.lastChild.textContent = data.reply;
+      var botResponse = data.reply || data.response || data.message || (data.choices && data.choices[0].text) || "No response received.";
+      
+      if (msgs.lastChild && msgs.lastChild.textContent === 'Typing...') {
+        msgs.lastChild.textContent = botResponse;
+      } else {
+        addMsg(botResponse, 'b');
+      }
     } catch(e) {
-      msgs.lastChild.textContent = 'Sorry, could not connect. Please try again.';
+      if (msgs.lastChild && msgs.lastChild.textContent === 'Typing...') {
+        msgs.lastChild.textContent = 'Sorry, could not connect. Please try again.';
+      } else {
+        addMsg('Sorry, could not connect. Please try again.', 'b');
+      }
     }
     msgs.scrollTop = msgs.scrollHeight;
   }
 
-  send.addEventListener('click', function(e) {
-    e.preventDefault();
-    sendMsg();
-  });
-
-  inp.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      sendMsg();
-    }
-  });
+  send.addEventListener('click', function(e) { e.preventDefault(); sendMsg(); });
+  inp.addEventListener('keydown', function(e) { if(e.key === 'Enter') { e.preventDefault(); sendMsg(); } });
 })();
