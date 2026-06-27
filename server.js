@@ -36,7 +36,7 @@ ${context}
 
 USER QUESTION: ${message}`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ USER QUESTION: ${message}`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20240620', 
+        model: 'claude-3-5-sonnet-latest', // <-- FIXED THIS LINE TO CHOOSE THE ACTIVE MODEL ID
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
