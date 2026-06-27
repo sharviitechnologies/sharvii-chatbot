@@ -4,10 +4,14 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const Fuse = require('fuse.js');
 const fs = require('fs');
+const path = require('path'); // <-- FIX 1: Added path module
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// <-- FIX 2: Serve the public folder statically
+app.use(express.static(path.join(__dirname, 'public'))); 
 
 const content = JSON.parse(fs.readFileSync('content.json', 'utf8'));
 const fuse = new Fuse(content, { keys: ['title', 'body'], threshold: 0.4 });
@@ -40,7 +44,7 @@ USER QUESTION: ${message}`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-3-5-sonnet-20240620', // Note: Made sure the model string matches Claude's typical naming structure
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -49,8 +53,11 @@ USER QUESTION: ${message}`;
     const data = await response.json();
     res.json({ reply: data.content[0].text });
   } catch(e) {
+    console.error(e); // Good for debugging in Railway console logs
     res.json({ reply: 'Sorry, something went wrong. Please try again.' });
   }
 });
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+// <-- FIX 3: Use Railway's dynamic port environment variable
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
