@@ -4,13 +4,13 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 const Fuse = require('fuse.js');
 const fs = require('fs');
-const path = require('path'); // <-- FIX 1: Added path module
+const path = require('path'); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// <-- FIX 2: Serve the public folder statically
+// Serve the public folder statically
 app.use(express.static(path.join(__dirname, 'public'))); 
 
 const content = JSON.parse(fs.readFileSync('content.json', 'utf8'));
@@ -44,20 +44,32 @@ USER QUESTION: ${message}`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20240620', // Note: Made sure the model string matches Claude's typical naming structure
+        model: 'claude-3-5-sonnet-20240620', 
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const data = await response.json();
-    res.json({ reply: data.content[0].text });
+    
+    // Debugging print to help see what Claude returns in your Railway logs
+    console.log("Anthropic API Response:", JSON.stringify(data));
+
+    // FIX: Bulletproof property check to make sure it doesn't crash if 'data.content' is undefined
+    if (data && data.content && data.content[0] && data.content[0].text) {
+      res.json({ reply: data.content[0].text });
+    } else if (data && data.error && data.error.message) {
+      // If Claude returns an API error configuration status (e.g., billing, wrong key)
+      res.json({ reply: `API Error: ${data.error.message}` });
+    } else {
+      res.json({ reply: 'Sorry, I couldn\'t process the response structure from Claude.' });
+    }
+
   } catch(e) {
-    console.error(e); // Good for debugging in Railway console logs
+    console.error("Server catch block error:", e); 
     res.json({ reply: 'Sorry, something went wrong. Please try again.' });
   }
 });
 
-// <-- FIX 3: Use Railway's dynamic port environment variable
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
