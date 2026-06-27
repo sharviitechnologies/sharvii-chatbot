@@ -7,14 +7,15 @@
     #st-btn {
       position: fixed !important;
       bottom: 30px !important;
-      right: 30px !important;
+      left: 30px !important; /* Moved to the left corner */
+      right: auto !important;
       width: 65px !important;
       height: 65px !important;
       border-radius: 50% !important;
-      background: #ffffff !important; /* <-- CHANGED BACKGROUND TO WHITE FOR THE LOGO */
-      border: 2px solid #1a5f3c !important; /* Elegant green border matching your branding */
+      background: #ffffff !important;
+      border: 2px solid #1a5f3c !important;
       cursor: pointer !important;
-      z-index: 2147483647 !important; /* MAXIMUM ALLOWED LAYER PRIORITY */
+      z-index: 2147483647 !important;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
       display: flex !important;
       align-items: center !important;
@@ -31,7 +32,8 @@
     #st-box {
       position: fixed !important;
       bottom: 105px !important;
-      right: 30px !important;
+      left: 30px !important; /* Box opens on the left side directly above the button */
+      right: auto !important;
       width: 350px !important;
       height: 480px !important;
       background: #fff !important;
