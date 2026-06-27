@@ -18,7 +18,7 @@
     #st-btn {
       position: fixed !important;
       bottom: 30px !important;
-      right: 30px !important; /* Flipped back to right corner */
+      right: 30px !important;
       left: auto !important;
       width: 65px !important;
       height: 65px !important;
@@ -43,7 +43,7 @@
     #st-box {
       position: fixed !important;
       bottom: 105px !important;
-      right: 30px !important; /* Opens on the right side above button */
+      right: 30px !important;
       left: auto !important;
       width: 350px !important;
       height: 480px !important;
@@ -121,14 +121,14 @@
       border-radius: 8px !important;
       padding: 9px 16px !important;
       cursor: pointer !important;
-      font-size: 14px !important;
     }
   `;
   document.head.appendChild(style);
 
+  // Added hardcoded style attributes inline to guarantee a right-side render
   document.body.insertAdjacentHTML('beforeend',
-    '<button id="st-btn" onclick="window.toggleSharviiChat(event)"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
-    '<div id="st-box">' +
+    '<button id="st-btn" style="left:auto !important; right:30px !important;" onclick="window.toggleSharviiChat(event)"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
+    '<div id="st-box" style="left:auto !important; right:30px !important;">' +
     '<div id="st-head"><img src="' + LOGO_URL + '"> Sharvii Assistant</div>' +
     '<div id="st-msgs"><div class="b">Hi! Ask me anything about Sharvii Technologies 😊</div></div>' +
     '<div id="st-row"><input id="st-inp" placeholder="Type your question..."/><button id="st-send">Send</button></div>' +
