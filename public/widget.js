@@ -2,12 +2,24 @@
   var BACKEND = 'https://sharvii-chatbot-production.up.railway.app/chat';
   var LOGO_URL = 'https://sharviitechnologies.com/wp-content/uploads/2026/01/cropped-ST-logo.png';
 
+  // Expose toggle function globally so WordPress can find it anywhere
+  window.toggleSharviiChat = function(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    var box = document.getElementById('st-box');
+    if (box) {
+      box.style.display = (box.style.display === 'flex') ? 'none' : 'flex';
+    }
+  };
+
   var style = document.createElement('style');
   style.textContent = `
     #st-btn {
       position: fixed !important;
       bottom: 30px !important;
-      left: 30px !important; /* Moved to the left corner */
+      left: 30px !important;
       right: auto !important;
       width: 65px !important;
       height: 65px !important;
@@ -32,7 +44,7 @@
     #st-box {
       position: fixed !important;
       bottom: 105px !important;
-      left: 30px !important; /* Box opens on the left side directly above the button */
+      left: 30px !important;
       right: auto !important;
       width: 350px !important;
       height: 480px !important;
@@ -115,8 +127,9 @@
   `;
   document.head.appendChild(style);
 
+  // Added explicit onclick attribute natively directly onto the button HTML layout
   document.body.insertAdjacentHTML('beforeend',
-    '<button id="st-btn"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
+    '<button id="st-btn" onclick="window.toggleSharviiChat(event)"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
     '<div id="st-box">' +
     '<div id="st-head"><img src="' + LOGO_URL + '"> Sharvii Assistant</div>' +
     '<div id="st-msgs"><div class="b">Hi! Ask me anything about Sharvii Technologies 😊</div></div>' +
@@ -124,29 +137,9 @@
     '</div>'
   );
 
-  var btn = document.getElementById('st-btn');
-  var box = document.getElementById('st-box');
   var inp = document.getElementById('st-inp');
   var send = document.getElementById('st-send');
   var msgs = document.getElementById('st-msgs');
-
-  btn.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (box.style.display === 'flex') {
-      box.style.display = 'none';
-    } else {
-      box.style.display = 'flex';
-    }
-  });
-
-  function addMsg(text, type) {
-    var div = document.createElement('div');
-    div.className = type;
-    div.textContent = text;
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
-  }
 
   async function sendMsg() {
     var msg = inp.value.trim();
@@ -165,6 +158,14 @@
     } catch(e) {
       msgs.lastChild.textContent = 'Sorry, could not connect. Please try again.';
     }
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addMsg(text, type) {
+    var div = document.createElement('div');
+    div.className = type;
+    div.textContent = text;
+    msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
   }
 
