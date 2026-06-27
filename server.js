@@ -44,7 +44,7 @@ const response = await fetch('https://api.anthropic.com/v1/messages', {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-latest',
+        model: 'claude-sonnet-4-6', // <-- CHANGED THIS LINE TO MATCH THE TEAM KEY REQUIREMENT
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
