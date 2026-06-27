@@ -36,7 +36,7 @@ ${context}
 
 USER QUESTION: ${message}`;
 
-const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ const response = await fetch('https://api.anthropic.com/v1/messages', {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6', // <-- CHANGED THIS LINE TO MATCH THE TEAM KEY REQUIREMENT
+        model: 'claude-sonnet-4-6', // Updated to exact custom model string required by TL
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -52,21 +52,20 @@ const response = await fetch('https://api.anthropic.com/v1/messages', {
 
     const data = await response.json();
     
-    // Debugging print to help see what Claude returns in your Railway logs
-    console.log("Anthropic API Response:", JSON.stringify(data));
+    // Safety check log inside your Railway deployment
+    console.log("Anthropic API Response Object:", JSON.stringify(data));
 
-    // FIX: Bulletproof property check to make sure it doesn't crash if 'data.content' is undefined
+    // Parse loop checks to catch text response safely without throwing script exceptions
     if (data && data.content && data.content[0] && data.content[0].text) {
       res.json({ reply: data.content[0].text });
     } else if (data && data.error && data.error.message) {
-      // If Claude returns an API error configuration status (e.g., billing, wrong key)
       res.json({ reply: `API Error: ${data.error.message}` });
     } else {
       res.json({ reply: 'Sorry, I couldn\'t process the response structure from Claude.' });
     }
 
   } catch(e) {
-    console.error("Server catch block error:", e); 
+    console.error("Server exception caught:", e); 
     res.json({ reply: 'Sorry, something went wrong. Please try again.' });
   }
 });
