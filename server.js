@@ -1,16 +1,23 @@
 require('dotenv').config();
+const { execSync } = require('child_process');
+// Crawl on startup if running on Railway
+if (process.env.RAILWAY_ENVIRONMENT) {
+  console.log('Crawling site...');
+  try { execSync('node crawler.js', {stdio: 'inherit'}); } catch(e) { console.log('Crawl failed:', e.message); }
+}
+
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const Fuse = require('fuse.js');
 const fs = require('fs');
-const path = require('path'); 
+const path = require('path'); // <-- FIX 1: Added path module
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve the public folder statically
+// <-- FIX 2: Serve the public folder statically
 app.use(express.static(path.join(__dirname, 'public'))); 
 
 const content = JSON.parse(fs.readFileSync('content.json', 'utf8'));
@@ -23,8 +30,8 @@ app.get('/', (req, res) => {
 app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
-    const results = fuse.search(message).slice(0, 5);
-    const context = results.map(r => `Page: ${r.item.title}\nURL: ${r.item.url}\n${r.item.body.slice(0, 1500)}`).join('\n\n---\n\n');
+    const results = fuse.search(message).slice(0, 3);
+    const context = results.map(r => `Page: ${r.item.title}\nURL: ${r.item.url}\n${r.item.body.slice(0, 600)}`).join('\n\n---\n\n');
 
     const prompt = `You are a helpful assistant for Sharvii Technologies, an NGO digital agency.
 Answer questions using ONLY the content below.
@@ -44,31 +51,20 @@ USER QUESTION: ${message}`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6', // Updated to exact custom model string required by TL
+        model: 'claude-3-5-sonnet-20240620', // Note: Made sure the model string matches Claude's typical naming structure
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
     });
 
     const data = await response.json();
-    
-    // Safety check log inside your Railway deployment
-    console.log("Anthropic API Response Object:", JSON.stringify(data));
-
-    // Parse loop checks to catch text response safely without throwing script exceptions
-    if (data && data.content && data.content[0] && data.content[0].text) {
-      res.json({ reply: data.content[0].text });
-    } else if (data && data.error && data.error.message) {
-      res.json({ reply: `API Error: ${data.error.message}` });
-    } else {
-      res.json({ reply: 'Sorry, I couldn\'t process the response structure from Claude.' });
-    }
-
+    res.json({ reply: data.content[0].text });
   } catch(e) {
-    console.error("Server exception caught:", e); 
+    console.error(e); // Good for debugging in Railway console logs
     res.json({ reply: 'Sorry, something went wrong. Please try again.' });
   }
 });
 
+// <-- FIX 3: Use Railway's dynamic port environment variable
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
