@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
-    const results = fuse.search(message).slice(0, 3);
+    const results = fuse.search(message).slice(0, 5);
     const context = results.map(r => `Page: ${r.item.title}\nURL: ${r.item.url}\n${r.item.body.slice(0, 1500)}`).join('\n\n---\n\n');
 
     const prompt = `You are a helpful assistant for Sharvii Technologies, an NGO digital agency.
