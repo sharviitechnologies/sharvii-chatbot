@@ -19,7 +19,7 @@ async function crawl() {
       for (let j = 0; j < items.length; j++) {
         const item = items[j];
         const body = (item.content ? item.content.rendered : '') + ' ' + (item.excerpt ? item.excerpt.rendered : '');
-        const clean = body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        const clean = body.replace(/<[^>]+>/g, ' ').replace(/\{[^}]+\}/g, ' ').replace(/\s+/g, ' ').trim();
         if (clean.length > 50) {
           content.push({ title: item.title.rendered, url: item.link, body: clean });
         }
