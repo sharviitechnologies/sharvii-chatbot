@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch');
 const Fuse = require('fuse.js');
 const fs = require('fs');
 const path = require('path'); 
@@ -9,81 +8,77 @@ const path = require('path');
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, 'public'))); 
 
+// Load local database data safely
 let content = [];
 try {
   content = JSON.parse(fs.readFileSync('content.json', 'utf8'));
 } catch (e) {
-  content = [{ title: "Sharvii Technologies", url: "https://sharviitechnologies.com", body: "NGO Digital Agency" }];
+  content = [
+    { title: "services", body: "We provide Web Design & Development, Digital Marketing (SEO & Social Media), Branding & Graphic Design, Content Creation, Custom Software/CRM Solutions, and Fundraising support for NGOs." },
+    { title: "contact", body: "You can reach us via email at info@sharviitechnologies.com or visit our official page at https://sharviitechnologies.com/contact/" }
+  ];
 }
 
-let fuse = new Fuse(content, { keys: ['title', 'body'], threshold: 0.6 });
+// Configure loose search matching parameters
+let fuse = new Fuse(content, { keys: ['title', 'body'], threshold: 0.5 });
 
 app.get('/', (req, res) => {
-  res.send('Sharvii Chatbot is running dynamically!');
+  res.send('Sharvii Chatbot is running locally!');
 });
 
-app.post('/chat', async (req, res) => {
+app.post('/chat', (req, res) => {
   try {
     const { message } = req.body;
-    const results = fuse.search(message).slice(0, 3);
-    const context = results.map(r => `Page: ${r.item.title}\nURL: ${r.item.url}\n${r.item.body}`).join('\n\n---\n\n');
+    const lowerMsg = message.toLowerCase();
 
-    const prompt = `You are a helpful AI assistant for Sharvii Technologies, an NGO digital agency.
-Answer the user's question using the site content below. Be conversational, direct, and professional.
-
-OUR CORE SERVICES:
-- Web Design & Development (Custom design, mobile-responsive, user-friendly UI)
-- Digital Marketing (Social media strategy, SEO, online outreach campaigns)
-- Branding & Graphic Design (Logos, brand identity, creative visual storytelling)
-- Content Creation (Copywriting, blog posts, newsletters, NGO impact reports)
-- Technology Solutions (Custom software & app development, CRM & donor management systems, tech support)
-- Fundraising & Outreach Support (Digital fundraising, crowdfunding support, donor engagement strategies)
-
-CONTACT DETAILS:
-Email: info@sharviitechnologies.com
-Contact URL: https://sharviitechnologies.com/contact/
-
-SITE CONTENT CONTEXT:
-${context}
-
-USER QUESTION: ${message}`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-haiku-20240307', // Using ultra-compatible Haiku to prevent key mismatch blocks
-        max_tokens: 500,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    const data = await response.json();
-
-    // Log the API response to the Railway console so we can debug easily!
-    console.log("Anthropic API Response:", JSON.stringify(data));
-
-    if (data && data.content && data.content[0] && data.content[0].text) {
-      res.json({ reply: data.content[0].text });
-    } else if (data && data.error) {
-      // If Anthropic tells us something is wrong (like insufficient funds), show it directly
-      res.json({ reply: `API Notice: ${data.error.message}. Please check your console settings.` });
-    } else {
-      res.json({ reply: "I am having trouble reading our internal service docs right now. Let's talk directly! Reach out to us at info@sharviitechnologies.com or check out https://sharviitechnologies.com/contact/" });
+    // 1. Instant Smart Local Matching (Bypasses API Errors)
+    if (lowerMsg.includes('service') || lowerMsg.includes('what u provide') || lowerMsg.includes('platform')) {
+      return res.json({
+        reply: "At Sharvii Technologies, we provide a comprehensive range of digital services tailored for NGOs:\n\n" +
+               "• Web Design & Development (Custom, mobile-responsive websites)\n" +
+               "• Digital Marketing (SEO, Social Media management, and online outreach)\n" +
+               "• Branding & Graphic Design (Logos and visual brand identities)\n" +
+               "• Content Creation (Copywriting, impact storytelling, and newsletters)\n" +
+               "• Technology Solutions (Custom software, mobile apps, LMS stores, and CRM tools)\n" +
+               "• Fundraising Support (Crowdfunding and donor engagement strategies)\n\n" +
+               "For inquiries, visit: https://sharviitechnologies.com/contact/"
+      });
     }
 
+    if (lowerMsg.includes('contact') || lowerMsg.includes('number') || lowerMsg.includes('email')) {
+      return res.json({
+        reply: "You can easily get in touch with our team at Sharvii Technologies:\n\n" +
+               "✉️ Email: info@sharviitechnologies.com\n" +
+               "🌐 Official Contact Page: https://sharviitechnologies.com/contact/\n\n" +
+               "Drop us a line and we will get back to you shortly!"
+      });
+    }
+
+    if (lowerMsg.includes('impact')) {
+      return res.json({
+        reply: "Our Impact page showcases how Sharvii Technologies helps non-profits amplify their mission. " +
+               "We have worked with 370+ organizations globally across India, the US, Europe, and Australia to build " +
+               "sustainable technology for the social sector. Explore our full portfolio work here: https://sharviitechnologies.com/"
+      });
+    }
+
+    // 2. Fuse.js fallback search if no main keyword matches
+    const results = fuse.search(message);
+    if (results.length > 0) {
+      return res.json({ reply: results[0].item.body });
+    }
+
+    // Default friendly response
+    res.json({
+      reply: "I want to make sure you get the right details! For specific questions about our NGO solutions, check out our site details or contact our helpdesk at info@sharviitechnologies.com."
+    });
+
   } catch(e) {
-    console.error("Chat Server Error:", e);
-    res.json({ reply: 'Connection reset. Please ask your question again.' });
+    res.json({ reply: 'The system is updating. Please try asking your question again.' });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Local Engine running on port ${PORT}`));
