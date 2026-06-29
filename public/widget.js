@@ -65,7 +65,7 @@
       font-size: 15px !important;
       display: flex !important;
       align-items: center !important;
-      justify-content: space-between !important; /* Spaces title and close icon */
+      justify-content: space-between !important;
     }
     #st-title-area {
       display: flex !important;
@@ -142,7 +142,7 @@
   `;
   document.head.appendChild(style);
 
-  // Forced inline styles ensure structural execution properties strictly render on the right
+  // Core HTML Injector
   document.body.insertAdjacentHTML('beforeend',
     '<button id="st-btn" style="left:auto !important; right:30px !important;" onclick="window.toggleSharviiChat(event)"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
     '<div id="st-box" style="left:auto !important; right:30px !important;">' +
@@ -168,12 +168,16 @@
     }
   } catch(e) { console.error(e); }
 
+  // Check if history is genuinely empty before setting the first welcome text
   if (chatHistory.length === 0) {
     chatHistory.push({ text: "Hi! Ask me anything about Sharvii Technologies 😊", type: "b" });
     saveHistory();
   }
 
-  // Display initial history elements
+  // Wipe the UI clean once to guarantee zero duplicated renderings on page changes
+  msgs.innerHTML = '';
+
+  // Display clean initial history elements
   chatHistory.forEach(function(item) {
     renderMsgElement(item.text, item.type);
   });
@@ -204,8 +208,6 @@
     inp.value = '';
     
     addMsg(msg, 'u');
-    
-    // Add temporary visual anchor trace element
     renderMsgElement('Typing...', 'b');
     
     try {
@@ -216,7 +218,6 @@
       });
       var data = await res.json();
       
-      // Clear out the temporary text anchor trace, then commit true response data logs
       if (msgs.lastChild && msgs.lastChild.textContent === 'Typing...') {
         msgs.removeChild(msgs.lastChild);
       }
