@@ -17,11 +17,10 @@ try {
 } catch (e) {
   content = [
     { title: "services", body: "We provide Web Design & Development, Digital Marketing (SEO & Social Media), Branding & Graphic Design, Content Creation, Custom Software/CRM Solutions, and Fundraising support for NGOs." },
-    { title: "contact", body: "You can reach us via email at info@sharviitechnologies.com or visit our official page at https://sharviitechnologies.com/contact/" }
+    { title: "contact", body: "You can reach us via email at support@sharvii.com or call/WhatsApp us at +91 97390 06477." }
   ];
 }
 
-// Configure loose search matching parameters
 let fuse = new Fuse(content, { keys: ['title', 'body'], threshold: 0.5 });
 
 app.get('/', (req, res) => {
@@ -33,7 +32,7 @@ app.post('/chat', (req, res) => {
     const { message } = req.body;
     const lowerMsg = message.toLowerCase();
 
-    // 1. Instant Smart Local Matching (Bypasses API Errors)
+    // 1. Instant Smart Local Matching
     if (lowerMsg.includes('service') || lowerMsg.includes('what u provide') || lowerMsg.includes('platform')) {
       return res.json({
         reply: "At Sharvii Technologies, we provide a comprehensive range of digital services tailored for NGOs:\n\n" +
@@ -43,16 +42,18 @@ app.post('/chat', (req, res) => {
                "• Content Creation (Copywriting, impact storytelling, and newsletters)\n" +
                "• Technology Solutions (Custom software, mobile apps, LMS stores, and CRM tools)\n" +
                "• Fundraising Support (Crowdfunding and donor engagement strategies)\n\n" +
-               "For inquiries, visit: https://sharviitechnologies.com/contact/"
+               "For inquiries, visit our team at: https://sharviitechnologies.com/contact-us/"
       });
     }
 
-    if (lowerMsg.includes('contact') || lowerMsg.includes('number') || lowerMsg.includes('email')) {
+    // UPDATED: Correct support channels with WhatsApp redirect and correct contact-us URL
+    if (lowerMsg.includes('contact') || lowerMsg.includes('number') || lowerMsg.includes('email') || lowerMsg.includes('phone') || lowerMsg.includes('whatsapp')) {
       return res.json({
         reply: "You can easily get in touch with our team at Sharvii Technologies:\n\n" +
-               "✉️ Email: info@sharviitechnologies.com\n" +
-               "🌐 Official Contact Page: https://sharviitechnologies.com/contact/\n\n" +
-               "Drop us a line and we will get back to you shortly!"
+               "✉️ Email: support@sharvii.com\n" +
+               "📞 Phone / WhatsApp: https://wa.me/919739006477 (+91 97390 06477)\n" +
+               "🌐 Official Contact Page: https://sharviitechnologies.com/contact-us/\n\n" +
+               "Click the WhatsApp link above or drop us an email, and we will get back to you shortly!"
       });
     }
 
@@ -64,15 +65,14 @@ app.post('/chat', (req, res) => {
       });
     }
 
-    // 2. Fuse.js fallback search if no main keyword matches
+    // 2. Fallback matching engine
     const results = fuse.search(message);
     if (results.length > 0) {
       return res.json({ reply: results[0].item.body });
     }
 
-    // Default friendly response
     res.json({
-      reply: "I want to make sure you get the right details! For specific questions about our NGO solutions, check out our site details or contact our helpdesk at info@sharviitechnologies.com."
+      reply: "I want to make sure you get the right details! For specific questions about our NGO solutions, reach out directly to support@sharvii.com or ping us via WhatsApp here: https://wa.me/919739006477"
     });
 
   } catch(e) {
