@@ -2,7 +2,7 @@
   var BACKEND = 'https://sharvii-chatbot-production.up.railway.app/chat';
   var LOGO_URL = 'https://sharviitechnologies.com/wp-content/uploads/2026/01/cropped-ST-logo.png';
 
-  // Expose toggle function globally so WordPress can find it anywhere
+  // Toggle layout window cleanly while respecting alignment boundaries
   window.toggleSharviiChat = function(e) {
     if (e) {
       e.preventDefault();
@@ -19,8 +19,8 @@
     #st-btn {
       position: fixed !important;
       bottom: 30px !important;
-left: auto !important;  
-right: 30px !important;
+      right: 30px !important;
+      left: auto !important;
       width: 65px !important;
       height: 65px !important;
       border-radius: 50% !important;
@@ -44,8 +44,8 @@ right: 30px !important;
     #st-box {
       position: fixed !important;
       bottom: 105px !important;
-      left: 30px !important;
-      right: auto !important;
+      right: 30px !important;
+      left: auto !important;
       width: 350px !important;
       height: 480px !important;
       background: #fff !important;
@@ -65,6 +65,11 @@ right: 30px !important;
       font-size: 15px !important;
       display: flex !important;
       align-items: center !important;
+      justify-content: space-between !important; /* Spaces title and close icon */
+    }
+    #st-title-area {
+      display: flex !important;
+      align-items: center !important;
       gap: 8px !important;
     }
     #st-head img {
@@ -72,6 +77,16 @@ right: 30px !important;
       height: 24px !important;
       border-radius: 50% !important;
       background: #fff !important;
+    }
+    #st-close {
+      background: transparent !important;
+      border: none !important;
+      color: #ffffff !important;
+      font-size: 20px !important;
+      cursor: pointer !important;
+      padding: 0 4px !important;
+      line-height: 1 !important;
+      font-weight: bold !important;
     }
     #st-msgs {
       flex: 1 !important;
@@ -127,13 +142,16 @@ right: 30px !important;
   `;
   document.head.appendChild(style);
 
-  // Added explicit onclick attribute natively directly onto the button HTML layout
+  // Forced inline styles ensure structural execution properties strictly render on the right
   document.body.insertAdjacentHTML('beforeend',
-    '<button id="st-btn" onclick="window.toggleSharviiChat(event)"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
-    '<div id="st-box">' +
-    '<div id="st-head"><img src="' + LOGO_URL + '"> Sharvii Assistant</div>' +
-    '<div id="st-msgs"><div class="b">Hi! Ask me anything about Sharvii Technologies 😊</div></div>' +
-    '<div id="st-row"><input id="st-inp" placeholder="Type your question..."/><button id="st-send">Send</button></div>' +
+    '<button id="st-btn" style="left:auto !important; right:30px !important;" onclick="window.toggleSharviiChat(event)"><img src="' + LOGO_URL + '" alt="Logo"></button>' +
+    '<div id="st-box" style="left:auto !important; right:30px !important;">' +
+      '<div id="st-head">' +
+        '<div id="st-title-area"><img src="' + LOGO_URL + '"> Sharvii Assistant</div>' +
+        '<button id="st-close" onclick="window.toggleSharviiChat(event)">&times;</button>' +
+      '</div>' +
+      '<div id="st-msgs"></div>' +
+      '<div id="st-row"><input id="st-inp" placeholder="Type your question..."/><button id="st-send">Send</button></div>' +
     '</div>'
   );
 
@@ -141,12 +159,55 @@ right: 30px !important;
   var send = document.getElementById('st-send');
   var msgs = document.getElementById('st-msgs');
 
+  // Load old history safely or inject initial greetings message object block
+  var chatHistory = [];
+  try {
+    var stored = sessionStorage.getItem('sharvii_chat_history');
+    if (stored) {
+      chatHistory = JSON.parse(stored);
+    }
+  } catch(e) { console.error(e); }
+
+  if (chatHistory.length === 0) {
+    chatHistory.push({ text: "Hi! Ask me anything about Sharvii Technologies 😊", type: "b" });
+    saveHistory();
+  }
+
+  // Display initial history elements
+  chatHistory.forEach(function(item) {
+    renderMsgElement(item.text, item.type);
+  });
+
+  function saveHistory() {
+    try {
+      sessionStorage.setItem('sharvii_chat_history', JSON.stringify(chatHistory));
+    } catch(e) {}
+  }
+
+  function renderMsgElement(text, type) {
+    var div = document.createElement('div');
+    div.className = type;
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addMsg(text, type) {
+    chatHistory.push({ text: text, type: type });
+    saveHistory();
+    renderMsgElement(text, type);
+  }
+
   async function sendMsg() {
     var msg = inp.value.trim();
     if (!msg) return;
     inp.value = '';
+    
     addMsg(msg, 'u');
-    addMsg('Typing...', 'b');
+    
+    // Add temporary visual anchor trace element
+    renderMsgElement('Typing...', 'b');
+    
     try {
       var res = await fetch(BACKEND, {
         method: 'POST',
@@ -154,19 +215,18 @@ right: 30px !important;
         body: JSON.stringify({ message: msg })
       });
       var data = await res.json();
-      msgs.lastChild.textContent = data.reply;
+      
+      // Clear out the temporary text anchor trace, then commit true response data logs
+      if (msgs.lastChild && msgs.lastChild.textContent === 'Typing...') {
+        msgs.removeChild(msgs.lastChild);
+      }
+      addMsg(data.reply || "No response received.", 'b');
     } catch(e) {
-      msgs.lastChild.textContent = 'Sorry, could not connect. Please try again.';
+      if (msgs.lastChild && msgs.lastChild.textContent === 'Typing...') {
+        msgs.removeChild(msgs.lastChild);
+      }
+      addMsg('Sorry, could not connect. Please try again.', 'b');
     }
-    msgs.scrollTop = msgs.scrollHeight;
-  }
-
-  function addMsg(text, type) {
-    var div = document.createElement('div');
-    div.className = type;
-    div.textContent = text;
-    msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
   }
 
   send.addEventListener('click', function(e) { e.preventDefault(); sendMsg(); });
