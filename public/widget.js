@@ -19,8 +19,8 @@
     #st-btn {
       position: fixed !important;
       bottom: 30px !important;
-      left: 30px !important;
-      right: auto !important;
+left: auto !important;  
+right: 30px !important;
       width: 65px !important;
       height: 65px !important;
       border-radius: 50% !important;
