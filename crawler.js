@@ -1,53 +1,37 @@
-const axios = require('axios');
-const cheerio = require('cheerio');
+const fetch = require('node-fetch');
 const fs = require('fs');
 
-const SITE = 'https://sharviitechnologies.com';
-
-const PAGES = [
-  '/',
-  '/about/',
-  '/our-services/',
-  '/our-impact/',
-  '/contact-us/',
-  '/consultation/',
-  '/sharvii-donation-platform/',
-  '/task-management/',
-  '/impact-tech-2026/'
-];
-
-async function scrapePage(path) {
-  try {
-    const res = await axios.get(SITE + path, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-      timeout: 15000
-    });
-    const $ = cheerio.load(res.data);
-    $('script, style, nav, footer, head').remove();
-    const text = $('body').text().replace(/\s+/g, ' ').trim();
-    const title = $('title').text() || path;
-    console.log('Scraped: ' + path + ' (' + text.length + ' chars)');
-    return { title, url: SITE + path, body: text };
-  } catch(e) {
-    console.log('Failed: ' + path + ' - ' + e.message);
-    return null;
-  }
-}
+const BASE = 'https://sharviitechnologies.com/wp-json/wp/v2';
 
 async function crawl() {
-  const content = [];
-  content.push({
-    title: 'Contact Information',
-    url: SITE + '/contact-us/',
-    body: 'Contact Sharvii Technologies. Email: support@sharvii.com Phone: +91 97390 06477. Book a call at https://sharviitechnologies.com/consultation/'
-  });
-  for (const path of PAGES) {
-    const page = await scrapePage(path);
-    if (page && page.body.length > 100) content.push(page);
-    await new Promise(r => setTimeout(r, 1000));
+  let content = [];
+  const types = ['pages', 'posts', 'services', 'portfolio', 'team'];
+
+  for (let i = 0; i < types.length; i++) {
+    const type = types[i];
+    try {
+      const url = BASE + '/' + type + '?per_page=100&_fields=title,content,link,excerpt';
+      const res = await fetch(url);
+      const text = await res.text();
+      if (!text.startsWith('[')) continue;
+      const items = JSON.parse(text);
+      if (!Array.isArray(items)) continue;
+      for (let j = 0; j < items.length; j++) {
+        const item = items[j];
+        const body = (item.content ? item.content.rendered : '') + ' ' + (item.excerpt ? item.excerpt.rendered : '');
+        const clean = body.replace(/<style[^>]*>.*?<\/style>/gs, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        if (clean.length > 50) {
+          content.push({ title: item.title.rendered, url: item.link, body: clean });
+        }
+      }
+      console.log('Got ' + items.length + ' ' + type);
+    } catch(e) {
+      console.log('Skipping ' + type);
+    }
   }
+
   fs.writeFileSync('content.json', JSON.stringify(content, null, 2));
-  console.log('Done! Saved ' + content.length + ' pages');
+  console.log('Done! Saved ' + content.length + ' total items');
 }
 
 crawl();

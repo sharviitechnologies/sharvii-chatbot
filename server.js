@@ -1,11 +1,4 @@
 require('dotenv').config();
-const { execSync } = require('child_process');
-// Crawl on startup if running on Railway
-if (process.env.RAILWAY_ENVIRONMENT) {
-  console.log('Crawling site...');
-  try { execSync('node crawler.js', {stdio: 'inherit'}); } catch(e) { console.log('Crawl failed:', e.message); }
-}
-
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
@@ -51,7 +44,7 @@ USER QUESTION: ${message}`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20240620', // Note: Made sure the model string matches Claude's typical naming structure
+        model: 'claude-sonnet-4-6', // Note: Made sure the model string matches Claude's typical naming structure
         max_tokens: 400,
         messages: [{ role: 'user', content: prompt }]
       })
