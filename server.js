@@ -28,7 +28,7 @@ app.post('/chat', async (req, res) => {
 
     const prompt = `You are a helpful assistant for Sharvii Technologies, an NGO digital agency.
 Answer questions using ONLY the content below.
-If the answer is not in the content, say "Please contact us at https://sharviitechnologies.com/contact/ for more details."
+If the answer is not in the content, say "Please contact us at https://sharviitechnologies.com/contact-us/ for more details. or say "For more info email support@sharvii.com or call +91 97390 06477". Never use markdown formatting like ** or [] or (). Give plain text answers only."
 Keep answers short, friendly and helpful.
 
 SITE CONTENT:
