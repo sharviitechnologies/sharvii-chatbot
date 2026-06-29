@@ -20,14 +20,12 @@ try {
   content = [{ title: "Sharvii Technologies", url: "https://sharviitechnologies.com", body: "NGO Digital Agency" }];
 }
 
-// Loosened threshold to 0.6 so fuzzy search triggers easily on any question!
 let fuse = new Fuse(content, { keys: ['title', 'body'], threshold: 0.6 });
 
 app.get('/', (req, res) => {
   res.send('Sharvii Chatbot is running dynamically!');
 });
 
-// A background URL to let you refresh the bot's knowledge anytime by uploading or pulling content
 app.post('/update-knowledge', (req, res) => {
   try {
     if (req.body && Array.isArray(req.body)) {
@@ -48,11 +46,22 @@ app.post('/chat', async (req, res) => {
     const results = fuse.search(message).slice(0, 3);
     const context = results.map(r => `Page: ${r.item.title}\nURL: ${r.item.url}\n${r.item.body}`).join('\n\n---\n\n');
 
-    const prompt = `You are a helpful assistant for Sharvii Technologies, an NGO digital agency.
-Answer questions using the site content below. If the information isn't detailed, mention the services comprehensively based on what you know.
-If you don't know the answer at all, say: "Please contact us at info@sharviitechnologies.com or visit https://sharviitechnologies.com/contact/ for more details."
+    const prompt = `You are a helpful AI assistant for Sharvii Technologies, an NGO digital agency.
+Answer the user's question using the site content below. Be conversational and professional.
 
-SITE CONTENT:
+OUR CORE SERVICES:
+- Web Design & Development (Custom design, mobile-responsive, user-friendly UI)
+- Digital Marketing (Social media strategy, SEO, online outreach campaigns)
+- Branding & Graphic Design (Logos, brand identity, creative visual storytelling)
+- Content Creation (Copywriting, blog posts, newsletters, NGO impact reports)
+- Technology Solutions (Custom software & app development, CRM & donor management systems, tech support)
+- Fundraising & Outreach Support (Digital fundraising, crowdfunding support, donor engagement strategies)
+
+CONTACT DETAILS:
+Email: info@sharviitechnologies.com
+Contact URL: https://sharviitechnologies.com/contact/
+
+SITE CONTENT CONTEXT:
 ${context}
 
 USER QUESTION: ${message}`;
@@ -65,7 +74,7 @@ USER QUESTION: ${message}`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6', 
+        model: 'claude-3-5-sonnet-latest', 
         max_tokens: 500,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -76,8 +85,8 @@ USER QUESTION: ${message}`;
     if (data && data.content && data.content[0] && data.content[0].text) {
       res.json({ reply: data.content[0].text });
     } else {
-      // Fallback text directly mentioning the structural array services if search failed
-      res.json({ reply: "Sharvii Technologies offers custom Websites, E-Commerce Stores, Mobile Apps, Learning Management Systems (LMS), CRM Solutions, Business WhatsApp API integration, Custom AI Chatbots, Social Media Handling, SEO, and complete Digital Marketing frameworks. How can I help you build your project?" });
+      // Clean fallback reply without markdown formatting bugs
+      res.json({ reply: "At Sharvii Technologies, we provide Web Design & Development, Digital Marketing (SEO & Social Media), Branding, Content Creation, Custom Software/CRM Solutions, and Fundraising support for NGOs. Please reach out to us at info@sharviitechnologies.com or visit https://sharviitechnologies.com/contact/ for details!" });
     }
 
   } catch(e) {
