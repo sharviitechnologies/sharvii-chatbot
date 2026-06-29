@@ -1,8 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const Fuse = require('fuse.js');
-const fs = require('fs');
+const fetch = require('node-fetch');
 const path = require('path'); 
 
 const app = express();
@@ -10,75 +9,66 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'))); 
 
-// Load local database data safely
-let content = [];
-try {
-  content = JSON.parse(fs.readFileSync('content.json', 'utf8'));
-} catch (e) {
-  content = [
-    { title: "services", body: "We provide Web Design & Development, Digital Marketing (SEO & Social Media), Branding & Graphic Design, Content Creation, Custom Software/CRM Solutions, and Fundraising support for NGOs." },
-    { title: "contact", body: "You can reach us via email at support@sharvii.com or call/WhatsApp us at +91 97390 06477." }
-  ];
-}
-
-let fuse = new Fuse(content, { keys: ['title', 'body'], threshold: 0.5 });
-
 app.get('/', (req, res) => {
-  res.send('Sharvii Chatbot is running locally!');
+  res.send('Sharvii Plugin Engine is Online!');
 });
 
-app.post('/chat', (req, res) => {
+app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
-    const lowerMsg = message.toLowerCase();
 
-    // 1. Instant Smart Local Matching
-    if (lowerMsg.includes('service') || lowerMsg.includes('what u provide') || lowerMsg.includes('platform')) {
-      return res.json({
-        reply: "At Sharvii Technologies, we provide a comprehensive range of digital services tailored for NGOs:\n\n" +
-               "• Web Design & Development (Custom, mobile-responsive websites)\n" +
-               "• Digital Marketing (SEO, Social Media management, and online outreach)\n" +
-               "• Branding & Graphic Design (Logos and visual brand identities)\n" +
-               "• Content Creation (Copywriting, impact storytelling, and newsletters)\n" +
-               "• Technology Solutions (Custom software, mobile apps, LMS stores, and CRM tools)\n" +
-               "• Fundraising Support (Crowdfunding and donor engagement strategies)\n\n" +
-               "For inquiries, visit our team at: https://sharviitechnologies.com/contact-us/"
-      });
-    }
+    // Direct instructions informing the AI who it is and providing the core business credentials
+    const systemPrompt = `You are the official conversational AI assistant for Sharvii Technologies (https://sharviitechnologies.com), an NGO digital agency.
+Your goal is to assist visitors dynamically with any questions they have about our services, platforms, work, or company.
 
-    // UPDATED: Correct support channels with WhatsApp redirect and correct contact-us URL
-    if (lowerMsg.includes('contact') || lowerMsg.includes('number') || lowerMsg.includes('email') || lowerMsg.includes('phone') || lowerMsg.includes('whatsapp')) {
-      return res.json({
-        reply: "You can easily get in touch with our team at Sharvii Technologies:\n\n" +
-               "✉️ Email: support@sharvii.com\n" +
-               "📞 Phone / WhatsApp: https://wa.me/919739006477 (+91 97390 06477)\n" +
-               "🌐 Official Contact Page: https://sharviitechnologies.com/contact-us/\n\n" +
-               "Click the WhatsApp link above or drop us an email, and we will get back to you shortly!"
-      });
-    }
+OFFICIAL CHANNELS & DETAILS:
+- Support Email: support@sharvii.com
+- Contact Page: https://sharviitechnologies.com/contact-us/
+- Phone & WhatsApp Redirect: https://wa.me/919739006477 (+91 97390 06477)
 
-    if (lowerMsg.includes('impact')) {
-      return res.json({
-        reply: "Our Impact page showcases how Sharvii Technologies helps non-profits amplify their mission. " +
-               "We have worked with 370+ organizations globally across India, the US, Europe, and Australia to build " +
-               "sustainable technology for the social sector. Explore our full portfolio work here: https://sharviitechnologies.com/"
-      });
-    }
+Core Business Profile: We build websites, platforms, custom mobile apps, LMS stores, donor management CRM tools, and run digital fundraising/marketing campaigns tailored specially for non-profits and NGOs since 2012.
 
-    // 2. Fallback matching engine
-    const results = fuse.search(message);
-    if (results.length > 0) {
-      return res.json({ reply: results[0].item.body });
-    }
+INSTRUCTIONS:
+1. Be helpful, professional, and friendly.
+2. Answer the user's question directly and dynamically using your vast knowledge base.
+3. When the user wants to get in touch, provide the clickable email, contact-us link, or WhatsApp redirect link provided above.`;
 
-    res.json({
-      reply: "I want to make sure you get the right details! For specific questions about our NGO solutions, reach out directly to support@sharvii.com or ping us via WhatsApp here: https://wa.me/919739006477"
+    // Make a live call to Anthropic using your newly active balance account credits
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-latest', 
+        max_tokens: 600,
+        messages: [
+          { role: 'user', content: `${systemPrompt}\n\nUser Question: ${message}` }
+        ]
+      })
     });
 
+    const data = await response.json();
+
+    // If the API call is successful, return the AI response directly to the frontend window widget
+    if (data && data.content && data.content[0] && data.content[0].text) {
+      return res.json({ reply: data.content[0].text });
+    }
+
+    // Error logging fallback if there's any key sync latency on the console
+    if (data && data.error) {
+      return res.json({ reply: `Notice: ${data.error.message}. Please verify your key configuration.` });
+    }
+
+    res.json({ reply: "I'm processing your request. Please ask your question once more!" });
+
   } catch(e) {
-    res.json({ reply: 'The system is updating. Please try asking your question again.' });
+    console.error("Plugin Connection Error:", e);
+    res.json({ reply: "Connection temporarily interrupted. We'll be right back!" });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Local Engine running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Live Plugin Engine active on port ${PORT}`));
