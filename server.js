@@ -12,7 +12,6 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'public'))); 
 
-// Fallback data loading system
 let content = [];
 try {
   content = JSON.parse(fs.readFileSync('content.json', 'utf8'));
@@ -26,20 +25,6 @@ app.get('/', (req, res) => {
   res.send('Sharvii Chatbot is running dynamically!');
 });
 
-app.post('/update-knowledge', (req, res) => {
-  try {
-    if (req.body && Array.isArray(req.body)) {
-      fs.writeFileSync('content.json', JSON.stringify(req.body, null, 2));
-      content = req.body;
-      fuse = new Fuse(content, { keys: ['title', 'body'], threshold: 0.6 });
-      return res.json({ success: true, message: "Bot knowledge updated instantly!" });
-    }
-    res.status(400).json({ error: "Invalid content format. Expected array." });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 app.post('/chat', async (req, res) => {
   try {
     const { message } = req.body;
@@ -47,7 +32,7 @@ app.post('/chat', async (req, res) => {
     const context = results.map(r => `Page: ${r.item.title}\nURL: ${r.item.url}\n${r.item.body}`).join('\n\n---\n\n');
 
     const prompt = `You are a helpful AI assistant for Sharvii Technologies, an NGO digital agency.
-Answer the user's question using the site content below. Be conversational and professional.
+Answer the user's question using the site content below. Be conversational, direct, and professional.
 
 OUR CORE SERVICES:
 - Web Design & Development (Custom design, mobile-responsive, user-friendly UI)
@@ -74,7 +59,7 @@ USER QUESTION: ${message}`;
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-latest', 
+        model: 'claude-3-haiku-20240307', // Using ultra-compatible Haiku to prevent key mismatch blocks
         max_tokens: 500,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -82,14 +67,20 @@ USER QUESTION: ${message}`;
 
     const data = await response.json();
 
+    // Log the API response to the Railway console so we can debug easily!
+    console.log("Anthropic API Response:", JSON.stringify(data));
+
     if (data && data.content && data.content[0] && data.content[0].text) {
       res.json({ reply: data.content[0].text });
+    } else if (data && data.error) {
+      // If Anthropic tells us something is wrong (like insufficient funds), show it directly
+      res.json({ reply: `API Notice: ${data.error.message}. Please check your console settings.` });
     } else {
-      // Clean fallback reply without markdown formatting bugs
-      res.json({ reply: "At Sharvii Technologies, we provide Web Design & Development, Digital Marketing (SEO & Social Media), Branding, Content Creation, Custom Software/CRM Solutions, and Fundraising support for NGOs. Please reach out to us at info@sharviitechnologies.com or visit https://sharviitechnologies.com/contact/ for details!" });
+      res.json({ reply: "I am having trouble reading our internal service docs right now. Let's talk directly! Reach out to us at info@sharviitechnologies.com or check out https://sharviitechnologies.com/contact/" });
     }
 
   } catch(e) {
+    console.error("Chat Server Error:", e);
     res.json({ reply: 'Connection reset. Please ask your question again.' });
   }
 });
