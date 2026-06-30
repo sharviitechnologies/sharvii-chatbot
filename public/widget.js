@@ -21,8 +21,8 @@
       bottom: 30px !important;
       right: 30px !important;
       left: auto !important;
-      width: 65px !important;
-      height: 65px !important;
+      width: 60px !important;
+      height: 60px !important;
       border-radius: 50% !important;
       background: #ffffff !important;
       border: 2px solid #1a5f3c !important;
@@ -36,11 +36,11 @@
       overflow: hidden !important;
     }
     #st-btn img {
-    width: 32px !important;       /* Reduces the width down to a clean widget standard size */
-    height: 32px !important;      /* Forces equal bounding boxes */
-    object-fit: contain !important; /* CRITICAL: Scales the logo down cleanly so it never crops */
-    border-radius: 50%;           /* Keeps it perfectly circular if you want a round icon wrapper */
-    padding: 2px;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important; /* Forces the entire logo to scale completely into frame */
+      padding: 4px !important;        /* Adds a safety cushion from the circular edge */
+      background: #ffffff !important;
     }
     #st-box {
       position: fixed !important;
@@ -71,13 +71,15 @@
     #st-title-area {
       display: flex !important;
       align-items: center !important;
-      gap: 8px !important;
+      gap: 10px !important;
     }
     #st-head img {
-      width: 24px !important;
-      height: 24px !important;
+      width: 28px !important;
+      height: 28px !important;
       border-radius: 50% !important;
-      background: #fff !important;
+      background: #ffffff !important;
+      object-fit: contain !important; /* Guarantees header logo never crops */
+      padding: 3px !important;        /* Prevents clipping */
     }
     #st-close {
       background: transparent !important;
@@ -160,7 +162,7 @@
   var send = document.getElementById('st-send');
   var msgs = document.getElementById('st-msgs');
 
-  // Load old history safely or inject initial greetings message object block
+  // Active user memory storage config
   var chatHistory = [];
   try {
     var stored = sessionStorage.getItem('sharvii_chat_history');
@@ -169,16 +171,13 @@
     }
   } catch(e) { console.error(e); }
 
-  // Check if history is genuinely empty before setting the first welcome text
   if (chatHistory.length === 0) {
     chatHistory.push({ text: "Hi! Ask me anything about Sharvii Technologies 😊", type: "b" });
     saveHistory();
   }
 
-  // Wipe the UI clean once to guarantee zero duplicated renderings on page changes
   msgs.innerHTML = '';
 
-  // Display clean initial history elements
   chatHistory.forEach(function(item) {
     renderMsgElement(item.text, item.type);
   });
