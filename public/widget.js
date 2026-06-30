@@ -36,10 +36,11 @@
       overflow: hidden !important;
     }
     #st-btn img {
-      width: 85% !important;
-      height: 85% !important;
-      object-fit: contain !important;
-      pointer-events: none !important;
+    width: 32px !important;       /* Reduces the width down to a clean widget standard size */
+    height: 32px !important;      /* Forces equal bounding boxes */
+    object-fit: contain !important; /* CRITICAL: Scales the logo down cleanly so it never crops */
+    border-radius: 50%;           /* Keeps it perfectly circular if you want a round icon wrapper */
+    padding: 2px;
     }
     #st-box {
       position: fixed !important;
