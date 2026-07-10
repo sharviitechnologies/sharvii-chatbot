@@ -35,11 +35,19 @@
   close.onclick = function() { box.style.display = 'none'; };
 
 function linkify(text) {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-      .replace(/(?<!\]|\()((https?:\/\/)[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
+    // Convert markdown links
+    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" style="color:#1a5f3c;text-decoration:underline;">$1</a>');
+    // Convert plain URLs
+    text = text.replace(/(?<!\]|\()((https?:\/\/)[^\s<]+)/g, '<a href="$1" target="_blank" style="color:#1a5f3c;text-decoration:underline;">$1</a>');
+    // Convert bold
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Convert numbered lists into styled items
+    text = text.replace(/(\d+)\.\s([^\n]+)/g, '<div style="padding:4px 0;border-left:3px solid #1a5f3c;padding-left:8px;margin:4px 0;">$1. $2</div>');
+    // Convert line breaks
+    text = text.replace(/\n/g, '<br>');
+    return text;
 }
+
 
   function addMsg(text, type, save) {
     var div = document.createElement('div');

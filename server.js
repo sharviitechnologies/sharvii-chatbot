@@ -27,7 +27,7 @@ app.post('/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 300,
+        max_tokens: 150,
         tools: [
           {
             type: 'web_search_20250305',
@@ -41,15 +41,13 @@ app.post('/chat', async (req, res) => {
 RULES:
 - Only answer questions about Sharvii Technologies
 - Always search sharviitechnologies.com to find the answer
-- Give very short answers — maximum 3 sentences
-- For lists like services, show maximum 5 items with one line each
-- Never give long paragraphs
-- End every answer with one follow up like "Want to know more about any specific service?"
-- If information is not on the website say exactly: "I don't have details on that. Please email support@sharvii.com, call +91 97390 06477, or visit https://sharviitechnologies.com/contact-us/"
-- Never make up information
-- Do not use markdown symbols like ** or [] in your answers
-- If someone asks for services list them clearly and completely
-- If someone asks for contact details give: Email: support@sharvii.com, Phone: +91 97390 06477`,
+- Keep answers under 60 words maximum
+- For service lists show max 4 services, one per line, numbered
+- Never write long paragraphs
+- Use simple plain language
+- End with one short follow up question only if needed
+- Never use ** markdown in answers
+- For contact give: Email: support@sharvii.com | Call: +91 97390 06477
         messages: [{ role: 'user', content: message }]
       })
     });
