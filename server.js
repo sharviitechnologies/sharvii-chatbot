@@ -27,7 +27,7 @@ app.post('/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
+        max_tokens: 300,
         tools: [
           {
             type: 'web_search_20250305',
@@ -41,7 +41,10 @@ app.post('/chat', async (req, res) => {
 RULES:
 - Only answer questions about Sharvii Technologies
 - Always search sharviitechnologies.com to find the answer
-- Give clear, short, friendly answers
+- Give very short answers — maximum 3 sentences
+- For lists like services, show maximum 5 items with one line each
+- Never give long paragraphs
+- End every answer with one follow up like "Want to know more about any specific service?"
 - If information is not on the website say exactly: "I don't have details on that. Please email support@sharvii.com, call +91 97390 06477, or visit https://sharviitechnologies.com/contact-us/"
 - Never make up information
 - Do not use markdown symbols like ** or [] in your answers

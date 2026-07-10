@@ -34,11 +34,12 @@
   btn.onclick = function() { box.style.display = box.style.display === 'flex' ? 'none' : 'flex'; msgs.scrollTop = msgs.scrollHeight; };
   close.onclick = function() { box.style.display = 'none'; };
 
-  function linkify(text) {
+function linkify(text) {
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/(https?:\/\/[^\s\)]+)/g, '<a href="$1" target="_blank">$1</a>');
-  }
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+      .replace(/(?<!\]|\()((https?:\/\/)[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
+}
 
   function addMsg(text, type, save) {
     var div = document.createElement('div');
