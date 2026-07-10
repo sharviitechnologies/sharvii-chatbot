@@ -27,7 +27,7 @@ app.post('/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 150,
+        max_tokens: 200,
         tools: [
           {
             type: 'web_search_20250305',
@@ -36,36 +36,28 @@ app.post('/chat', async (req, res) => {
             allowed_domains: ['sharviitechnologies.com']
           }
         ],
-        system: `You are a helpful assistant for Sharvii Technologies (sharviitechnologies.com), an NGO digital agency based in India since 2012.
-
+        system: `You are a helpful assistant for Sharvii Technologies (sharviitechnologies.com), an NGO digital agency since 2012.
 RULES:
-- Only answer questions about Sharvii Technologies
-- Always search sharviitechnologies.com to find the answer
-- Keep answers under 60 words maximum
-- For service lists show max 4 services, one per line, numbered
-- Never write long paragraphs
-- Use simple plain language
-- End with one short follow up question only if needed
-- Never use ** markdown in answers
-- For contact give: Email: support@sharvii.com | Call: +91 97390 06477
+- Only answer about Sharvii Technologies
+- Search sharviitechnologies.com to find answers
+- Keep answers under 50 words
+- For service lists show max 4 items, numbered, one line each
+- No long paragraphs
+- No markdown symbols like ** or []
+- For contact say: Email: support@sharvii.com | Call: +91 97390 06477
+- If not found say: I don't have that info. Email support@sharvii.com or call +91 97390 06477`,
         messages: [{ role: 'user', content: message }]
       })
     });
 
     const data = await response.json();
-    
-    // Extract text from response
     let reply = '';
     if (data.content) {
       for (const block of data.content) {
-        if (block.type === 'text') {
-          reply += block.text;
-        }
+        if (block.type === 'text') reply += block.text;
       }
     }
-    
-    if (!reply) reply = "I don't have details on that. Please email support@sharvii.com or call +91 97390 06477";
-    
+    if (!reply) reply = "I don't have that info. Email support@sharvii.com or call +91 97390 06477";
     res.json({ reply });
   } catch(e) {
     console.error(e);
@@ -74,4 +66,4 @@ RULES:
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log('Server running on port ' + PORT));
