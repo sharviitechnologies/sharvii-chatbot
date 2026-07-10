@@ -35,15 +35,17 @@
   close.onclick = function() { box.style.display = 'none'; };
 
 function linkify(text) {
+    // Convert numbered lists to styled cards
+    text = text.replace(/(\d+)\.\s([^\n\d]+)/g, function(match, num, content) {
+      return '<div style="display:flex;gap:8px;align-items:flex-start;margin:5px 0;"><span style="background:#1a5f3c;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px;">' + num + '</span><span>' + content.trim() + '</span></div>';
+    });
     // Convert markdown links
-    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" style="color:#1a5f3c;text-decoration:underline;">$1</a>');
+    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" style="color:#1a5f3c;font-weight:600;text-decoration:underline;">$1</a>');
     // Convert plain URLs
-    text = text.replace(/(?<!\]|\()((https?:\/\/)[^\s<]+)/g, '<a href="$1" target="_blank" style="color:#1a5f3c;text-decoration:underline;">$1</a>');
+    text = text.replace(/(?<!\]|\()((https?:\/\/)[^\s<"]+)/g, '<a href="$1" target="_blank" style="color:#1a5f3c;font-weight:600;text-decoration:underline;">click here</a>');
     // Convert bold
     text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Convert numbered lists into styled items
-    text = text.replace(/(\d+)\.\s([^\n]+)/g, '<div style="padding:4px 0;border-left:3px solid #1a5f3c;padding-left:8px;margin:4px 0;">$1. $2</div>');
-    // Convert line breaks
+    // Line breaks
     text = text.replace(/\n/g, '<br>');
     return text;
 }
